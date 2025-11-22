@@ -1,8 +1,9 @@
-import prisma from '../../../libs/db';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/route'; 
-import { NextResponse, NextRequest } from 'next/server';
-import { PropertyType, OperationType } from '@prisma/client';
+// src/app/api/properties/route.ts
+import prisma from "@/libs/db";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]/route";
+import { NextResponse, NextRequest } from "next/server";
+import { PropertyType, OperationType } from "@prisma/client";
 
 interface PropertyRequestBody {
   title: string;
@@ -11,7 +12,7 @@ interface PropertyRequestBody {
   city: string;
   province?: string;
   country?: string;
-  PropertyType: PropertyType;
+  PropertyType: PropertyType; // viene así desde el front
   price: number | string;
   area?: number | string;
   rooms?: number | string;
@@ -23,27 +24,36 @@ interface PropertyRequestBody {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
 
   const email = session.user?.email;
   if (!email) {
-    return NextResponse.json({ error: 'Email de sesión no encontrado' }, { status: 401 });
+    return NextResponse.json(
+      { error: "Email de sesión no encontrado" },
+      { status: 401 }
+    );
   }
 
   try {
-    const user = await prisma.user.findUnique({ 
+    const user = await prisma.user.findUnique({
       where: { email },
-      include: { realEstateAgencies: true }
+      include: { realEstateAgencies: true },
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
-    }
-    
-    if (user.role !== 'REALSTATE') {
       return NextResponse.json(
-        { error: 'Acceso denegado. Solo inmobiliarias pueden crear propiedades.' }, 
+        { error: "Usuario no encontrado" },
+        { status: 404 }
+      );
+    }
+
+    if (user.role !== "REALSTATE") {
+      return NextResponse.json(
+        {
+          error:
+            "Acceso denegado. Solo inmobiliarias pueden crear propiedades.",
+        },
         { status: 403 }
       );
     }
@@ -51,20 +61,34 @@ export async function POST(req: NextRequest) {
     const agency = user.realEstateAgencies[0];
     if (!agency) {
       return NextResponse.json(
-        { error: 'La cuenta inmobiliaria no está configurada correctamente.' }, 
+        { error: "La cuenta inmobiliaria no está configurada correctamente." },
         { status: 409 }
       );
     }
 
     const body: PropertyRequestBody = await req.json();
 
-    const { 
-      title, description, address, city, province, country, PropertyType: propType,
-      price, area, rooms, bathrooms, operationType, images
+    const {
+      title,
+      description,
+      address,
+      city,
+      province,
+      country,
+      PropertyType: propType,
+      price,
+      area,
+      rooms,
+      bathrooms,
+      operationType,
+      images,
     } = body;
 
     if (!title || !address || !city || !propType || !price || !operationType) {
-      return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Faltan campos obligatorios" },
+        { status: 400 }
+      );
     }
 
     const newProperty = await prisma.property.create({
@@ -73,9 +97,9 @@ export async function POST(req: NextRequest) {
         description,
         address,
         city,
-        province,
-        country,
-        PropertyType: propType,
+        province: province ?? "",
+        country: country ?? "",
+        type: propType, // ✅ campo real del schema
         price: parseFloat(price.toString()),
         area: area ? parseFloat(area.toString()) : null,
         rooms: rooms ? parseInt(rooms.toString()) : null,
@@ -87,12 +111,14 @@ export async function POST(req: NextRequest) {
         isAvailable: true,
       },
     });
-    
-    return NextResponse.json(newProperty, { status: 201 });
 
+    return NextResponse.json(newProperty, { status: 201 });
   } catch (err) {
-    const error = err as Error; 
+    const error = err as Error;
     console.error("Error al crear propiedad:", error);
-    return NextResponse.json({ error: 'Error al crear la propiedad', detail: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al crear la propiedad", detail: error.message },
+      { status: 500 }
+    );
   }
 }

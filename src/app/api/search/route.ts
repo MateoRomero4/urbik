@@ -1,12 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+// src/app/api/realstate-users/route.ts  (ajustá el path al tuyo)
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/libs/db";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
+    const query = searchParams.get("q");
 
     if (!query || query.length < 3) {
       return NextResponse.json({ users: [] });
@@ -14,12 +13,12 @@ export async function GET(request: NextRequest) {
 
     const users = await prisma.user.findMany({
       where: {
-        role: 'REALSTATE',
+        role: "REALSTATE",
         OR: [
-          { name: { contains: query, mode: 'insensitive' } },
-          { firstName: { contains: query, mode: 'insensitive' } },
-          { lastName: { contains: query, mode: 'insensitive' } },
-          { email: { contains: query, mode: 'insensitive' } },
+          { name: { contains: query, mode: "insensitive" } },
+          { firstName: { contains: query, mode: "insensitive" } },
+          { lastName: { contains: query, mode: "insensitive" } },
+          { email: { contains: query, mode: "insensitive" } },
         ],
       },
       select: {
@@ -30,8 +29,8 @@ export async function GET(request: NextRequest) {
       take: 5,
     });
 
-    const realStateUsers = users.map(user => ({
-      type: 'REALSTATE_USER',
+    const realStateUsers = users.map((user) => ({
+      type: "REALSTATE_USER",
       id: user.id,
       name: user.name,
       email: user.email,
@@ -39,7 +38,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ users: realStateUsers });
   } catch (error) {
-    console.error('Error fetching REALSTATE users:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Error fetching REALSTATE users:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

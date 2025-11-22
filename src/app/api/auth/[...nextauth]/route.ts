@@ -1,10 +1,10 @@
+// src/app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
 import { compare } from "bcryptjs";
-
-const prisma = new PrismaClient();
+import prisma from "@/libs/db";
+import type { Role } from "@prisma/client";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,12 +12,14 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
@@ -30,19 +32,47 @@ export const authOptions: NextAuthOptions = {
         const isValid = await compare(credentials.password, user.password);
         if (!isValid) return null;
 
-        return user;
+        // ✅ NextAuth necesita id string + no mandar password
+        return {
+          id: user.id.toString(),
+          email: user.email,
+          name: user.name,
+          role: user.role as Role,
+          image: user.image ?? null,
+        };
       },
     }),
   ],
+
   session: {
     strategy: "jwt",
   },
+
+  callbacks: {
+    async jwt({ token, user }) {
+      // cuando hay login, `user` existe
+      if (user) {
+        token.id = user.id;
+        token.role = (user as { role?: Role }).role;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as Role;
+      }
+      return session;
+    },
+  },
+
   pages: {
     signIn: "/login",
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };
