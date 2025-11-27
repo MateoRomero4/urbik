@@ -1,5 +1,6 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 export default function HomePageBanner() {
@@ -77,6 +78,21 @@ export default function HomePageBanner() {
                 {bottomWords[bottomIndex]}
               </motion.h2>
             </AnimatePresence>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/dashboard"
+              className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              Ir al Dashboard
+            </Link>
+            <Link
+              href="/map"
+              className="rounded-full border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-gray-900 shadow-md transition hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              Abrir mapa interactivo
+            </Link>
           </div>
         </section>
 

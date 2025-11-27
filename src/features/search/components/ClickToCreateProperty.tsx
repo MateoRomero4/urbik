@@ -51,6 +51,9 @@ export function ClickToCreateProperty({ onParcelPicked }: Props) {
 
     load();
 
+    const previousCursor = map.getContainer().style.cursor;
+    map.getContainer().style.cursor = "crosshair";
+
     const handleClick = async (e: LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
 
@@ -74,7 +77,10 @@ export function ClickToCreateProperty({ onParcelPicked }: Props) {
     };
 
     map.on("click", handleClick);
-    return () => map.off("click", handleClick);
+    return () => {
+      map.off("click", handleClick);
+      map.getContainer().style.cursor = previousCursor;
+    };
   }, [map, onParcelPicked]);
 
   return null;

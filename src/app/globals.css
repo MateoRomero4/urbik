@@ -15,3 +15,18 @@ body {
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
+
+.selected-parcel-shine path {
+  animation: parcelDash 2.4s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.45));
+  stroke-linecap: round;
+}
+
+@keyframes parcelDash {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 32;
+  }
+}

@@ -1,11 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, ReactNode } from "react";
+import React, { useState, useEffect, ReactNode, useMemo } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { StaticParcelsLayer } from "./StaticParcelsLayer";
 import { DbParcelsLayer } from "./DbParcelsLayer";
+import { mapBaseLayers } from "@/features/mapSettings/baseLayers";
+import { useMapSettings } from "@/features/mapSettings/MapSettingsProvider";
+import { SelectedParcelLayer } from "./SelectedParcelLayer";
+import type { Geometry } from "geojson";
 // icono default
 const defaultIcon = L.icon({
   iconRetinaUrl:
@@ -17,22 +21,9 @@ const defaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = defaultIcon;
 
-const baseLayers = {
-  osm: {
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution:
-      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-  },
-  cartoLight: {
-    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
-  },
-  satellite: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution:
-      "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, IGN y otros",
-  },
+type SelectedOverlay = {
+  geometry: Geometry;
+  label?: string;
 };
 
 interface InteractiveMapProps {
@@ -40,6 +31,8 @@ interface InteractiveMapProps {
   lon: number;
   query: string;
   children?: ReactNode;
+  selectedOverlay?: SelectedOverlay | null;
+  height?: string | number;
 }
 
 export const InteractiveMap: React.FC<InteractiveMapProps> = ({
@@ -47,9 +40,16 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   lon,
   query,
   children,
+  selectedOverlay,
+  height,
 }) => {
+  const { baseLayer } = useMapSettings();
   const position: [number, number] = [lat, lon];
   const [isClient, setIsClient] = useState(false);
+  const currentBaseLayer = useMemo(
+    () => mapBaseLayers[baseLayer] ?? mapBaseLayers.cartoLight,
+    [baseLayer]
+  );
 
   useEffect(() => setIsClient(true), []);
 
@@ -63,8 +63,15 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   return (
     <div className="relative">
-      <div className="absolute bottom-3 left-3 z-10 px-3 py-1 bg-black/70 text-white text-xs rounded">
-        {query}
+      <div className="absolute top-4 left-4 z-10 px-3 py-2 bg-black/75 text-white text-xs rounded shadow-lg backdrop-blur">
+        <div className="uppercase tracking-wide text-[10px] text-white/70">
+          Mapa base
+        </div>
+        <div className="text-sm font-semibold">{currentBaseLayer.label}</div>
+      </div>
+
+      <div className="absolute bottom-3 left-3 z-10 px-4 py-2 bg-black/70 text-white text-sm rounded shadow-lg">
+        {query || "Urbik"}
       </div>
 
       <MapContainer
@@ -73,12 +80,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         minZoom={14}
         maxZoom={18}
         scrollWheelZoom={true}
-        style={{ height: "100vh", width: "100%" }}
+        style={{ height: height ?? "100vh", width: "100%" }}
       >
         {/* Mapa base OSM */}
         <TileLayer
-          attribution={baseLayers.cartoLight.attribution}
-          url={baseLayers.cartoLight.url}
+          attribution={currentBaseLayer.attribution}
+          url={currentBaseLayer.url}
         />
 
         {/* Tiles estáticos de parcelas (QGIS) */}
@@ -87,6 +94,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
         {/* Lo que quieras encima (click, parcels DB, etc.) */}
         {children}
+        {selectedOverlay && (
+          <SelectedParcelLayer
+            geometry={selectedOverlay.geometry}
+            label={selectedOverlay.label}
+          />
+        )}
       </MapContainer>
     </div>
   );
