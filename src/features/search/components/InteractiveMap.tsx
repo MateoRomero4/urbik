@@ -1,23 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet'; 
+"use client";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl; 
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: '/leaflet/images/marker-icon-2x.png',
-  iconUrl: '/leaflet/images/marker-icon.png',
-  shadowUrl: '/leaflet/images/marker-shadow.png',
+import React, { useState, useEffect, ReactNode } from "react";
+import { MapContainer, TileLayer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { StaticParcelsLayer } from "./StaticParcelsLayer";
+import { DbParcelsLayer } from "./DbParcelsLayer";
+// icono default
+const defaultIcon = L.icon({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
 });
+L.Marker.prototype.options.icon = defaultIcon;
 
 const baseLayers = {
   osm: {
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+    attribution:
+      '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  },
+  cartoLight: {
+    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
   },
   satellite: {
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    attribution:
+      "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, IGN y otros",
   },
 };
 
@@ -25,64 +39,54 @@ interface InteractiveMapProps {
   lat: number;
   lon: number;
   query: string;
+  children?: ReactNode;
 }
 
-export const InteractiveMap: React.FC<InteractiveMapProps> = ({ lat, lon, query }) => {
+export const InteractiveMap: React.FC<InteractiveMapProps> = ({
+  lat,
+  lon,
+  query,
+  children,
+}) => {
   const position: [number, number] = [lat, lon];
-  const [currentLayer, setCurrentLayer] = useState('osm');
-  const [isClient, setIsClient] = useState(false); 
+  const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const activeLayer = baseLayers[currentLayer as keyof typeof baseLayers];
+  useEffect(() => setIsClient(true), []);
 
   if (!isClient) {
     return (
-      <div 
-        style={{ height: '600px', width: '100%', zIndex: 1 }} 
-        className='bg-gray-200 flex items-center justify-center'
-      >
+      <div className="bg-gray-200 flex items-center justify-center h-96">
         Cargando mapa...
       </div>
     );
   }
 
   return (
-    <div className='relative'>
-      <div className='absolute top-3 right-3 z-[1000] flex space-x-2 p-2 bg-black/80 rounded-lg shadow-lg'>
-        <button
-          onClick={() => setCurrentLayer('osm')}
-          className={`px-3 py-1 text-sm rounded-full transition-colors ${currentLayer === 'osm' ? 'bg-white text-black font-bold' : 'bg-transparent text-white hover:bg-white/20'}`}
-        >
-          Mapa
-        </button>
-        <button
-          onClick={() => setCurrentLayer('satellite')}
-          className={`px-3 py-1 text-sm rounded-full transition-colors ${currentLayer === 'satellite' ? 'bg-white text-black font-bold' : 'bg-transparent text-white hover:bg-white/20'}`}
-        >
-          Satélite
-        </button>
+    <div className="relative">
+      <div className="absolute bottom-3 left-3 z-10 px-3 py-1 bg-black/70 text-white text-xs rounded">
+        {query}
       </div>
 
-      <MapContainer 
-        center={position} 
-        zoom={15} 
+      <MapContainer
+        center={position}
+        zoom={15} // igual que el HTML
+        minZoom={14}
+        maxZoom={18}
         scrollWheelZoom={true}
-        style={{ height: '100vh', width: '100%', zIndex: 1 }} 
+        style={{ height: "100vh", width: "100%" }}
       >
+        {/* Mapa base OSM */}
         <TileLayer
-          attribution={activeLayer.attribution}
-          url={activeLayer.url}
-          maxZoom={20}
+          attribution={baseLayers.cartoLight.attribution}
+          url={baseLayers.cartoLight.url}
         />
-        
-        <Marker position={position}>
-          <Popup>
-            **Ubicación:** <br />{query}
-          </Popup>
-        </Marker>
+
+        {/* Tiles estáticos de parcelas (QGIS) */}
+        <StaticParcelsLayer />
+        <DbParcelsLayer />
+
+        {/* Lo que quieras encima (click, parcels DB, etc.) */}
+        {children}
       </MapContainer>
     </div>
   );

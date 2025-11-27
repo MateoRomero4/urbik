@@ -2,14 +2,15 @@
 import { NextResponse, NextRequest } from "next/server";
 import {
   registerUserAndAgency,
-  RegisterInput,
-  RegisterResult,
+  type RegisterInput,
+  type RegisterResult,
 } from "@/features/register/service/registerService";
 
 interface RegisterData {
   email: string;
   password: string;
-  agencyName: string;
+  name?: string; // 👈 más genérico
+  agencyName?: string; // por si tu formulario lo sigue usando
   accountType: "user" | "agency";
 }
 
@@ -17,8 +18,16 @@ export async function POST(req: NextRequest) {
   try {
     const data: RegisterData = await req.json();
 
+    // preferimos name, sino agencyName, sino vacío
+    const nameFromRequest =
+      data.name && data.name.trim().length > 0
+        ? data.name
+        : data.agencyName && data.agencyName.trim().length > 0
+        ? data.agencyName
+        : undefined;
+
     const mapped: RegisterInput = {
-      name: data.agencyName,
+      name: nameFromRequest,
       email: data.email,
       password: data.password,
       role: data.accountType === "agency" ? "RealEstateAgency" : "User",

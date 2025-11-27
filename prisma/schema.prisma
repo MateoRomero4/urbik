@@ -114,6 +114,12 @@ model Property {
   images          String[]    
   operationType   OperationType @default(RENT) 
 
+  latitude        Float?
+  longitude       Float?
+  parcelCCA       String?
+  parcelPDA       String?
+  parcelGeom      Json?         
+
   User            User          @relation("UserProperties", fields: [userId], references: [id])
   RealEstateAgency RealEstateAgency? @relation(fields: [realEstateAgencyId], references: [id], onDelete: SetNull)
   inquiries       Inquiry[]    
@@ -122,6 +128,7 @@ model Property {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
 
 enum PropertyType {
   HOUSE
