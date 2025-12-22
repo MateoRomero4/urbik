@@ -10,7 +10,7 @@ import { useMapSettings } from "@/features/mapSettings/MapSettingsProvider";
 
 const InteractiveMap = dynamic(
   () =>
-    import("@/features/search/components/InteractiveMap").then(
+    import("@/features/map/components/InteractiveMap").then(
       (m) => m.InteractiveMap
     ),
   { ssr: false }

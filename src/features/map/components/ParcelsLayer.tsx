@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { GeoJSON } from "react-leaflet";
 import type { FeatureCollection, Feature, Geometry } from "geojson";
 import type { Layer } from "leaflet";
+import L from "leaflet";
 
 type ParcelProps = {
   CCA: string | null;
@@ -42,10 +43,10 @@ export function ParcelsLayer() {
     fillOpacity: 0.35,
   };
 
-  const resetStyle = (layer: Layer) => {
-    (layer as unknown as { setStyle: (s: unknown) => void }).setStyle(
-      baseStyle()
-    );
+  const setLayerStyle = (layer: Layer, style: L.PathOptions) => {
+    // GeoJSON polygons are Path layers
+    const path = layer as unknown as L.Path;
+    if (path.setStyle) path.setStyle(style);
   };
 
   const onEachFeature = (feature: ParcelFeature, layer: Layer) => {
@@ -58,20 +59,21 @@ export function ParcelsLayer() {
     `);
 
     layer.on("click", () => {
-      if (lastHighlighted.current && lastHighlighted.current !== layer)
-        resetStyle(lastHighlighted.current);
-      (layer as any).setStyle(highlightStyle);
+      if (lastHighlighted.current && lastHighlighted.current !== layer) {
+        setLayerStyle(lastHighlighted.current, baseStyle());
+      }
+      setLayerStyle(layer, highlightStyle);
       lastHighlighted.current = layer;
     });
 
     layer.on("mouseover", () => {
-      (layer as any).setStyle({ weight: 2, fillOpacity: 0.4 });
+      setLayerStyle(layer, { weight: 2, fillOpacity: 0.4 });
     });
 
     layer.on("mouseout", () => {
       if (lastHighlighted.current === layer)
-        (layer as any).setStyle(highlightStyle);
-      else resetStyle(layer);
+        setLayerStyle(layer, highlightStyle);
+      else setLayerStyle(layer, baseStyle());
     });
   };
 

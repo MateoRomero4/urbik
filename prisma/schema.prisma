@@ -4,9 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url       = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
-
 
 model Account {
   id                String  @id
@@ -42,31 +41,29 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-
 model User {
-  id              Int       @id @default(autoincrement())
-  email           String   @unique
-  password        String
-  emailVerified   DateTime?
-  image           String?
-  name            String
-  firstName       String?  
-  lastName        String?  
-  phone           String?
-  role            Role      @default(USER)
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  password      String
+  emailVerified DateTime?
+  image         String?
+  name          String
+  firstName     String?
+  lastName      String?
+  phone         String?
+  role          Role      @default(USER)
 
-  Account         Account[]
-  Session         Session[]
-  properties      Property[] @relation("UserProperties") 
-  inquiries       Inquiry[] 
-  favorites       Favorite[] 
-  alerts          Alert[] 
-  realEstateAgencies RealEstateAgency[] 
+  Account            Account[]
+  Session            Session[]
+  properties         Property[]         @relation("UserProperties")
+  inquiries          Inquiry[]
+  favorites          Favorite[]
+  alerts             Alert[]
+  realEstateAgencies RealEstateAgency[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
-
 
 enum Role {
   USER
@@ -75,104 +72,100 @@ enum Role {
   AGENT
 }
 
+model RealEstateAgency {
+  id       Int     @id @default(autoincrement())
+  name     String
+  password String
+  address  String?
+  phone    String?
+  email    String  @unique
+  website  String?
 
-model RealEstateAgency { 
-  id            Int       @id @default(autoincrement())
-  name          String    
-  password           String   
-  address       String?   
-  phone         String?  
-  email         String    @unique
-  website       String?  
+  userId Int?
+  User   User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  userId        Int?
-  User          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  properties Property[]
 
-  properties    Property[] 
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
 
 model Property {
-  id              Int             @id @default(autoincrement())
-  title           String        
-  description     String?       
-  address         String       
-  city            String       
-  province        String      
-  country         String       
-  type            PropertyType
-  price           Float
-  area            Float?       
-  rooms           Int?        
-  bathrooms       Int?         
-  isAvailable     Boolean         @default(true)
-  userId          Int            
-  realEstateAgencyId Int? 
-  images          String[]    
-  operationType   OperationType @default(RENT) 
+  id                 Int           @id @default(autoincrement())
+  title              String
+  description        String?
+  address            String
+  city               String
+  province           String
+  country            String
+  type               PropertyType
+  price              Float
+  area               Float?
+  rooms              Int?
+  bathrooms          Int?
+  isAvailable        Boolean       @default(true)
+  userId             Int
+  realEstateAgencyId Int?
+  images             String[]
+  operationType      OperationType @default(RENT)
 
-  latitude        Float?
-  longitude       Float?
-  parcelCCA       String?
-  parcelPDA       String?
-  parcelGeom      Json?         
+  latitude   Float?
+  longitude  Float?
+  parcelCCA  String?
+  parcelPDA  String?
+  parcelGeom Json?
 
-  User            User          @relation("UserProperties", fields: [userId], references: [id])
+  User             User              @relation("UserProperties", fields: [userId], references: [id])
   RealEstateAgency RealEstateAgency? @relation(fields: [realEstateAgencyId], references: [id], onDelete: SetNull)
-  inquiries       Inquiry[]    
-  favorites       Favorite[] 
+  inquiries        Inquiry[]
+  favorites        Favorite[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
 
 enum PropertyType {
   HOUSE
   APARTMENT
   LAND
-  COMMERCIAL_PROPERTY 
+  COMMERCIAL_PROPERTY
   OFFICE
 }
 
 enum OperationType {
-  RENT 
-  SALE 
+  RENT
+  SALE
 }
 
-model Inquiry { 
-  id            Int       @id @default(autoincrement())
-  message       String   
-  userId        Int
-  propertyId    Int    
-  User          User      @relation(fields: [userId], references: [id])
-  Property      Property  @relation(fields: [propertyId], references: [id])
-  createdAt     DateTime  @default(now())
+model Inquiry {
+  id         Int      @id @default(autoincrement())
+  message    String
+  userId     Int
+  propertyId Int
+  User       User     @relation(fields: [userId], references: [id])
+  Property   Property @relation(fields: [propertyId], references: [id])
+  createdAt  DateTime @default(now())
 }
-
 
 model Favorite {
-  id            Int       @id @default(autoincrement())
-  userId        Int
-  propertyId    Int      
-  User          User      @relation(fields: [userId], references: [id])
-  Property      Property  @relation(fields: [propertyId], references: [id])
-  createdAt     DateTime  @default(now())
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  propertyId Int
+  User       User     @relation(fields: [userId], references: [id])
+  Property   Property @relation(fields: [propertyId], references: [id])
+  createdAt  DateTime @default(now())
 
   @@unique([userId, propertyId])
 }
 
-model Alert { 
-  id              Int            @id @default(autoincrement())
-  userId          Int
-  operationType   OperationType? 
-  propertyType    PropertyType?  
-  city            String?       
-  minPrice        Float? 
-  maxPrice        Float?
-  User            User           @relation(fields: [userId], references: [id])
-  createdAt       DateTime       @default(now())
+model Alert {
+  id            Int            @id @default(autoincrement())
+  userId        Int
+  operationType OperationType?
+  propertyType  PropertyType?
+  city          String?
+  minPrice      Float?
+  maxPrice      Float?
+  User          User           @relation(fields: [userId], references: [id])
+  createdAt     DateTime       @default(now())
 }

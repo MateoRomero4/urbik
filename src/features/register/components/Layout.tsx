@@ -1,36 +1,25 @@
-import React from 'react';
+import React from "react";
 
 const ImageSidebar = () => (
-  <div
-    className="hidden md:block md:w-3/5 lg:w-3/5 bg-cover bg-center h-full"
-    style={{ backgroundImage: "url('/image2.jpg')" }}
-    role="img"
-    aria-label="Fondo de imagen de Urbik"
-  >
-    <div className="h-full flex flex-col justify-between p-8 text-gray-950">
-      <div>
-        <h1 className="text-4xl font-extrabold mb-3 shadow-text">Urbik</h1>
-        <p className="text-xl font-light opacity-90 shadow-text">
-          Crea tu cuenta y comienza a gestionar tus propiedades
-        </p>
-      </div>
-      <div className="text-sm opacity-80 text-gray-950">
-        © 2025 Urbik. Todos los derechos reservados.
-      </div>
+  <div className="hidden lg:block w-3/5 relative overflow-hidden">
+    <img
+      src="/image.jpg"
+      alt="Auth Background"
+      className="absolute inset-0 w-full h-full object-cover"
+    />
+    <div className="absolute inset-0 bg-black/5" />
+    <div className="absolute bottom-8 left-8 text-white text-xs font-medium z-10 drop-shadow-md">
+      © 2025 Urbik. Todos los derechos reservados.
     </div>
   </div>
 );
 
-interface RegisterLayoutProps {
-  children: React.ReactNode;
-}
-
-export function RegisterLayout({ children }: RegisterLayoutProps) {
+export function RegisterLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-50 font-inter">
-      <div className="flex w-full h-full overflow-hidden bg-white shadow-2xl">
-        <ImageSidebar />
-        {children}
+    <div className="flex h-screen justify-center bg-white pt-17">
+      <ImageSidebar />
+      <div className="w-full lg:w-2/5 flex items-center justify-center p-12 ">
+        <div className="w-full ">{children}</div>
       </div>
     </div>
   );

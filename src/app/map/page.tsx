@@ -7,7 +7,7 @@ import React from "react";
 
 const InteractiveMap = dynamic(
   () =>
-    import("../../features/search/components/InteractiveMap").then(
+    import("../../features/map/components/InteractiveMap").then(
       (mod) => mod.InteractiveMap
     ),
   { ssr: false }

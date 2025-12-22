@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavbarWrapper from "@/components/navbar/Wrapper";
-import {Providers} from "./providers";
+import Navbar from "@/components/navbar/Navbar";
+import { Providers } from "./providers";
+import localFont from "next/font/local";
 
+const Tilt_Warp = localFont({
+  src: "../assets/fonts/TiltWarp.ttf",
+  variable: "--font-tiltwarp",
+});
 
+const Cocogoose = localFont({
+  src: "../assets/fonts/Cocogoose-Darkmode.ttf",
+  variable: "--font-cocogoose",
+});
 
 export const metadata: Metadata = {
   title: "Urbik - Encotrá tu lugar",
@@ -17,10 +25,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es" className={`${Tilt_Warp.variable} ${Cocogoose.variable}`}>
       <body>
         <Providers>
-          <NavbarWrapper/> 
+          <Navbar />
           {children}
         </Providers>
       </body>

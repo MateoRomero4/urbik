@@ -1,32 +1,164 @@
 @import "tailwindcss";
-@import 'leaflet/dist/leaflet.css';
+@import "leaflet/dist/leaflet.css";
 
-.map-container {
-    height: 90vh;
+/* =========================
+   THEME TOKENS (Tailwind v4)
+   ========================= */
+@theme {
+  /* Paleta del boceto */
+  --color-urbik-black: #000000;
+  --color-urbik-dark: #2e2e2e;
+  --color-urbik-dark2: #3e3e3e;
+  --color-urbik-white: #ffffff;
+
+  --color-urbik-g100: #e9e9e9;
+  --color-urbik-g200: #eeeeee;
+  --color-urbik-g300: #e6e6e6;
+  --color-urbik-g400: #c5c5c5;
+
+  /* Accent */
+  --color-urbik-cyan: #00f0ff;
+
+  /* Fonts (SOLO las del layout) */
+  --font-body: var(--font-tiltwarp);
+  --font-display: var(--font-cocogoose);
+  --font-brand: var(--font-cocogoose);
 }
 
+/* =========================
+   BASE GLOBAL
+   ========================= */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+html,
 body {
-    @apply bg-white
+  margin: 0;
+  padding: 0;
+  background: var(--color-urbik-white);
+  font-family: var(--font-body);
+  color: var(--color-urbik-black);
 }
 
-.glassmorphism {
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* Headings = Cocogoose */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
-.selected-parcel-shine path {
-  animation: parcelDash 2.4s linear infinite;
-  filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.45));
-  stroke-linecap: round;
+a {
+  text-decoration: none;
 }
 
-@keyframes parcelDash {
-  from {
-    stroke-dashoffset: 0;
+/* =========================
+   UTILIDADES URBIK
+   ========================= */
+@layer utilities {
+  /* BG */
+  .bg-urbik-black {
+    background-color: var(--color-urbik-black);
   }
-  to {
-    stroke-dashoffset: 32;
+  .bg-urbik-dark {
+    background-color: var(--color-urbik-dark);
   }
+  .bg-urbik-dark2 {
+    background-color: var(--color-urbik-dark2);
+  }
+  .bg-urbik-white {
+    background-color: var(--color-urbik-white);
+  }
+  .bg-urbik-g100 {
+    background-color: var(--color-urbik-g100);
+  }
+  .bg-urbik-g200 {
+    background-color: var(--color-urbik-g200);
+  }
+  .bg-urbik-g300 {
+    background-color: var(--color-urbik-g300);
+  }
+  .bg-urbik-g400 {
+    background-color: var(--color-urbik-g400);
+  }
+  .bg-urbik-cyan {
+    background-color: var(--color-urbik-cyan);
+  }
+
+  /* TEXT */
+  .text-urbik-black {
+    color: var(--color-urbik-black);
+  }
+  .text-urbik-white {
+    color: var(--color-urbik-white);
+  }
+  .text-urbik-muted {
+    color: var(--color-urbik-dark2);
+  }
+  .text-urbik-cyan {
+    color: var(--color-urbik-cyan);
+  }
+
+  /* BORDER */
+  .border-urbik {
+    border-color: var(--color-urbik-g400);
+  }
+
+  /* Fonts explícitas */
+  .font-body {
+    font-family: var(--font-body);
+  }
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-brand {
+    font-family: var(--font-brand);
+  }
+
+  /* Components */
+  .pill {
+    @apply rounded-full px-6 py-3 text-xs font-medium uppercase tracking-wide;
+  }
+  .btn {
+    @apply rounded-full px-8 py-3 font-medium text-sm transition-colors;
+  }
+  .input-pill {
+    @apply w-full rounded-full py-4 pl-12 pr-6 outline-none;
+  }
+  .glass {
+    background: rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* =========================
+   MAP
+   ========================= */
+.map-container {
+  height: 90vh;
+}
+
+/* =========================
+   SCROLLBAR
+   ========================= */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-urbik-white);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-urbik-dark2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-urbik-black);
 }
